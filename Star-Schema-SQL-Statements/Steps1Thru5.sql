@@ -281,20 +281,16 @@ REFERENCES FreightRates(Freight_Rates_ID);
 -- Set The Foreign Keys in The Dimension Tables
 ALTER TABLE FreightRates
 ADD FOREIGN KEY (PortCarrier_ID)
-REFERENCES FactTable(PortCarrier_ID)
-ENABLE NOVALIDATE;
+REFERENCES PortCarrier(PortCarrier_ID);
 
 ALTER TABLE PlantConstraints
 ADD FOREIGN KEY (PlantProdCust_ID)
-REFERENCES FactTable(PlantProdCust_ID)
-ENABLE NOVALIDATE;
+REFERENCES PlantProdCust(PlantProdCust_ID);
 
 ALTER TABLE OrderList
 ADD FOREIGN KEY (PortCarrier_ID)
-REFERENCES FactTable(PortCarrier_ID)
-ENABLE NOVALIDATE;
+REFERENCES PortCarrier(PortCarrier_ID);
 
 ALTER TABLE OrderList
 ADD FOREIGN KEY (PlantProdCust_ID)
-REFERENCES FactTable(PlantProdCust_ID)
-ENABLE NOVALIDATE;
+REFERENCES PlantProdCust(PlantProdCust_ID);
