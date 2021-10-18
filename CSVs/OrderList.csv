@@ -1,4 +1,4 @@
-Order_ID,Order_Date,Orig_Port,Carrier,TPT,Service_Level,Ship_Ahead_Day_Count,Ship_Late_Day_Count,Customer,Product_ID,Plant_Code,Dest_Port,Unit_Quant,Weight
+Order_ID,Order_Date,Orig_Port,Carrier,TPT_Day_Count,Service_Level,Ship_Ahead_Day_Count,Ship_Late_Day_Count,Customer,Product_ID,Plant_Code,Dest_Port,Unit_Quant,Weight
 1447296447,5/26/13,PORT09,V44_3,1,CRF,3,0,V55555_53,1700106,PLANT16,PORT09,808,14.3
 1447158015,5/26/13,PORT09,V44_3,1,CRF,3,0,V55555_53,1700106,PLANT16,PORT09,3188,87.94
 1447138899,5/26/13,PORT09,V44_3,1,CRF,3,0,V55555_53,1700106,PLANT16,PORT09,2331,61.2
