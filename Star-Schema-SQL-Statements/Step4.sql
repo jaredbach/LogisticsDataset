@@ -9,7 +9,6 @@ CREATE TABLE FactTable (
 	Max_Weight_Quant 		    NUMBER(38),
 	Min_Cost 		            NUMBER(38),
 	Rate 			            NUMBER(38),
-	TPT			                NUMBER(38),
 	TPT_Day_Count 		        NUMBER(38),
 	Cost_Per_Unit 		        NUMBER(38),
 	Daily_Capacity 		        NUMBER(38),
@@ -30,8 +29,8 @@ SELECT PlantConstraints.PlantCode_Constraint_ID, PlantConstraints.Cost_Per_Unit,
 FROM PlantConstraints;
 
 -- Insert Into FactTable Data From OrderList
-INSERT INTO FactTable (FactTable.Order_ID, FactTable.Ship_Ahead_Day_Count, FactTable.Ship_Late_Day_Count, FactTable.Unit_Quant, FactTable.Weight, FactTable.TPT)
-SELECT OrderList.Order_ID, OrderList.Ship_Ahead_Day_Count, OrderList.Ship_Late_Day_Count, OrderList.Unit_Quant, OrderList.Weight, OrderList.TPT
+INSERT INTO FactTable (FactTable.Order_ID, FactTable.Ship_Ahead_Day_Count, FactTable.Ship_Late_Day_Count, FactTable.Unit_Quant, FactTable.Weight, FactTable.TPT_Day_Count)
+SELECT OrderList.Order_ID, OrderList.Ship_Ahead_Day_Count, OrderList.Ship_Late_Day_Count, OrderList.Unit_Quant, OrderList.Weight, OrderList.TPT_Day_Count
 FROM OrderList;
 
 -- Insert Into FactTable Foreign Key From PlantProdCust 
@@ -46,4 +45,4 @@ FROM PortCarrier;
 
 -- Dropping Columns
 ALTER TABLE FreightRates DROP (Min_Weight_Quant, Max_Weight_Quant, Min_Cost, Rate, TPT_Day_Count); ALTER TABLE PlantConstraints DROP (Cost_Per_Unit, Daily_Capacity);
-ALTER TABLE OrderList DROP (TPT, Ship_Ahead_Day_Count, Ship_Late_Day_Count, Unit_Quant, Weight);
+ALTER TABLE OrderList DROP (TPT_Day_Count, Ship_Ahead_Day_Count, Ship_Late_Day_Count, Unit_Quant, Weight);
