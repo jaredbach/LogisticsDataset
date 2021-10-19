@@ -75,17 +75,18 @@ CREATE TABLE PortCarrier (
 	PortCarrier_ID 	NUMBER(38),
 	Carrier 		VARCHAR2(26),
 	Orig_Port 	VARCHAR2(26),
-	Dest_Port 	VARCHAR2(26)
+	Dest_Port 	VARCHAR2(26),
+	Service_Level	VARCHAR2(26)
 	);
 
 -- Insert OrderList Data Into PortCarrier Table
-INSERT INTO PortCarrier (PortCarrier.Carrier, PortCarrier.Orig_Port, PortCarrier.Dest_Port)
-SELECT OrderList.Carrier, OrderList.Orig_Port, OrderList.Dest_Port 
+INSERT INTO PortCarrier (PortCarrier.Carrier, PortCarrier.Orig_Port, PortCarrier.Dest_Port, PortCarrier.Service_Level)
+SELECT OrderList.Carrier, OrderList.Orig_Port, OrderList.Dest_Port, OrderList.Service_Level 
 FROM OrderList;
 
 -- Insert FreightRates Data Into PortCarrier Table
-INSERT INTO PortCarrier (PortCarrier.Carrier, PortCarrier.Orig_Port, PortCarrier.Dest_Port)
-SELECT FreightRates.Carrier, FreightRates.Orig_Port, FreightRates.Dest_Port
+INSERT INTO PortCarrier (PortCarrier.Carrier, PortCarrier.Orig_Port, PortCarrier.Dest_Port, PortCarrier.Service_Level)
+SELECT FreightRates.Carrier, FreightRates.Orig_Port, FreightRates.Dest_Port, FreightRates.Service_Level
 FROM FreightRates;
 
 -- Remove Duplicate Rows in PortCarrier
@@ -95,6 +96,7 @@ DELETE FROM PortCarrier A WHERE ROWID NOT IN (
 	WHERE A.Carrier = B.Carrier
 	AND A.Orig_Port = B.Orig_Port
 	AND A.Dest_Port = B.Dest_Port
+	AND A.Service_Level = B.Service_Level
 	);
 
 -- Populate The Primary Key Column
@@ -111,12 +113,15 @@ SET A.PortCarrier_ID = (
 	FROM PortCarrier B
 	WHERE A.Carrier=B.Carrier
 	AND A.Orig_Port=B.Orig_Port
-	AND A.Dest_Port=B.Dest_Port );
+	AND A.Dest_Port=B.Dest_Port
+	AND A.Service_Level=B.Service_Level
+);
 
--- Drop Carrier, Orig_Port, & Dest_Port Columns From OrderList
-ALTER TABLE OrderList DROP COLUMN Orig_Port;
-ALTER TABLE OrderList DROP COLUMN Dest_Port;
-ALTER TABLE OrderList DROP COLUMN Carrier;
+-- Drop Carrier, Orig_Port, Service_Level & Dest_Port Columns From OrderList
+ALTER TABLE OrderList 		DROP COLUMN Orig_Port;
+ALTER TABLE OrderList 		DROP COLUMN Dest_Port;
+ALTER TABLE OrderList 		DROP COLUMN Carrier;
+ALTER TABLE OrderList		DROP COLUMN Service_Level;
 
 -- Add PortCarrier_ID to FreightRates
 ALTER TABLE FreightRates
@@ -129,12 +134,16 @@ SET A.PortCarrier_ID = (
 	FROM PortCarrier B
 	WHERE A.Carrier=B.Carrier
 	AND A.Orig_Port=B.Orig_Port
-	AND A.Dest_Port=B.Dest_Port );
+	AND A.Dest_Port=B.Dest_Port 
+	AND A.Service_Level=B.Service_Level
+);
 
--- Drop Carrier, Orig_Port, & Dest_Port Columns From OrderList
+-- Drop Carrier, Orig_Port, Service_Level & Dest_Port Columns From OrderList
 ALTER TABLE FreightRates DROP COLUMN Orig_Port;
 ALTER TABLE FreightRates DROP COLUMN Dest_Port;
 ALTER TABLE FreightRates DROP COLUMN Carrier;
+ALTER TABLE FreightRates DROP COLUMN Service_Level;
+
 
 
 
