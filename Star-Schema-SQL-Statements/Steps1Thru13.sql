@@ -1,3 +1,4 @@
+-- Step 1
 -- Create New Table PlantConstraints
 CREATE TABLE PlantConstraints (
 	Plant_Code  	VARCHAR2(26),
@@ -53,6 +54,7 @@ DROP TABLE VmiCustomers;
 DROP TABLE ProductsPerPlant;
 DROP TABLE PlantPorts;
 
+-- Step 2
 -- Add New Column to Table
 ALTER TABLE FreightRates
 ADD (Freight_Rates_ID NUMBER(38));
@@ -61,6 +63,8 @@ ADD (Freight_Rates_ID NUMBER(38));
 UPDATE FreightRates
 SET Freight_Rates_ID = Seq_X.NEXTVAL;
 
+
+-- Step 3
 -- Create PlantProdCust Table
 CREATE TABLE PlantProdCust (
 	PlantProdCust_ID    NUMBER(38),
@@ -207,6 +211,7 @@ ALTER TABLE FreightRates DROP COLUMN Dest_Port;
 ALTER TABLE FreightRates DROP COLUMN Carrier;
 ALTER TABLE FreightRates DROP COLUMN Service_Level;
 
+-- Step 4
 -- Create Fact Table
 CREATE TABLE FactTable (
 	PlantCode_Constraint_ID 	NUMBER(38),
@@ -256,7 +261,7 @@ FROM PortCarrier;
 ALTER TABLE FreightRates DROP (Min_Weight_Quant, Max_Weight_Quant, Min_Cost, Rate, TPT_Day_Count); ALTER TABLE PlantConstraints DROP (Cost_Per_Unit, Daily_Capacity);
 ALTER TABLE OrderList DROP (TPT_Day_Count, Ship_Ahead_Day_Count, Ship_Late_Day_Count, Unit_Quant, Weight);
 
-
+-- Step 5
 -- Set The Primary Keys
 ALTER TABLE FreightRates 		ADD PRIMARY KEY 	(Freight_Rates_ID);
 ALTER TABLE PlantConstraints	ADD PRIMARY KEY 	(PlantCode_Constraint_ID);
@@ -302,3 +307,192 @@ REFERENCES PortCarrier(PortCarrier_ID);
 ALTER TABLE OrderList
 ADD FOREIGN KEY (PlantProdCust_ID)
 REFERENCES PlantProdCust(PlantProdCust_ID);
+
+-- Step 6
+-- Drop Order_Date from OrderList
+ALTER TABLE OrderList DROP COLUMN Order_Date;
+
+-- Step 7
+-- Create New Column, Location_ID, in the FactTable
+ALTER TABLE FactTable ADD Location_ID NUMBER(38);
+
+-- Insert Into the FactTable Location_IDs From Locations
+INSERT INTO FactTable (FactTable.Location_ID)
+SELECT Locations.Location_ID
+FROM Locations;
+
+-- Create New Column, Dest_Port_Location_ID, in the FactTable
+ALTER TABLE FactTable ADD Dest_Port_Location_ID NUMBER(38);
+
+-- Insert Into the FactTable Dest_Port_Location_IDs From Dest_Port_Locations
+INSERT INTO FactTable (FactTable.Dest_Port_Location_ID)
+SELECT Dest_Port_Locations.Dest_Port_Location_ID
+FROM Dest_Port_Locations;
+
+-- Create New Column, Orig_Port_Location_ID, in the FactTable
+ALTER TABLE FactTable ADD Orig_Port_Location_ID NUMBER(38);
+
+-- Insert Into the FactTable Orig_Port_Location_IDs From Orig_Port_Locations
+INSERT INTO FactTable (FactTable.Orig_Port_Location_ID)
+SELECT Orig_Port_Locations.Orig_Port_Location_ID
+FROM Orig_Port_Locations;
+
+-- Create New Column, Location_ID, in the FactTable
+ALTER TABLE FactTable ADD Plant_Location_ID NUMBER(38);
+
+-- Insert Into the FactTable Plant_Location_IDs From Plant_Locations
+INSERT INTO FactTable (FactTable.Plant_Location_ID)
+SELECT Plant_Locations.Plant_Location_ID
+FROM Plant_Locations;
+
+-- Step 8
+-- Create New Column, Port_Location_ID, in PlantConstraints
+ALTER TABLE PlantConstraints ADD Port_Location_ID NUMBER(38);
+
+-- Populate The Port_Location_ID in PlantConstraints Correctly
+UPDATE PlantConstraints A
+SET A.Port_Location_ID = (
+	SELECT Orig_Port_Location_ID
+	FROM Orig_Port_Locations B
+	WHERE A.Ports=B.Orig_Port
+);
+
+-- Create 2 New Columns, Orig_Location_ID & Dest_Location_ID, in PortCarrier
+ALTER TABLE PortCarrier ADD Orig_Port_Location_ID NUMBER(38);
+ALTER TABLE PortCarrier ADD Dest_Port_Location_ID NUMBER(38);
+
+-- Populate The Orig_Port_Location_ID in PortCarrier Correctly
+UPDATE PortCarrier A
+SET A.Orig_Port_Location_ID = (
+	SELECT Orig_Port_Location_ID
+	FROM Orig_Port_Locations B
+	WHERE A.Orig_Port=B.Orig_Port
+);
+
+-- Populate The Dest_Port_Location_ID in PortCarrier Correctly
+UPDATE PortCarrier A
+SET A.Dest_Port_Location_ID = (
+	SELECT Dest_Port_Location_ID
+	FROM Dest_Port_Locations B
+	WHERE A.Dest_Port=B.Dest_Port
+);
+
+-- Create New Column, Plant_Location_ID, in PlantProdCust
+ALTER TABLE PlantProdCust ADD Plant_Location_ID NUMBER(38);
+
+-- Populate The Plant_Location_ID in PlantProdCust Correctly
+UPDATE PlantProdCust A
+SET A.Plant_Location_ID = (
+	SELECT Plant_Location_ID
+	FROM Plant_Locations B
+	WHERE A.Plant_Code=B.Plant_Code
+);
+
+-- Step 9
+-- Drop Ports From PlantConstraints 
+ALTER TABLE PlantConstraints DROP COLUMN Ports;
+
+-- Drop Orig_Port, Dest_Port From PortCarrier 
+ALTER TABLE PortCarrier DROP COLUMN Orig_Port;
+ALTER TABLE PortCarrier DROP COLUMN Dest_Port;
+
+-- Drop Plant_Code From PlantProdCust 
+ALTER TABLE PlantProdCust DROP COLUMN Plant_Code;
+
+-- Step 10
+-- Create Month_Num, Month_Name, Quarter, & Year Columns in Table OrderList
+ALTER TABLE OrderList ADD Order_Date DATE;
+ALTER TABLE OrderList ADD Month_Num NUMBER(38);
+ALTER TABLE OrderList ADD Month_Name VARCHAR2(26);
+ALTER TABLE OrderList ADD Quarter NUMBER(38);
+ALTER TABLE OrderList ADD Year_ NUMBER(38);
+
+-- Insert Order_Date, Month_Num, Month_Name, Quarter, & Year Data From Table Dates Into Table OrderList
+UPDATE OrderList A 
+SET A.Order_Date = (SELECT Order_Date FROM Dates B WHERE A.Order_ID=B.Order_ID);
+
+UPDATE OrderList A 
+SET A.Month_Num = (SELECT Month_Num FROM Dates B WHERE A.Order_ID=B.Order_ID);
+
+UPDATE OrderList A 
+SET A.Month_Name = (SELECT Month_Name FROM Dates B WHERE A.Order_ID=B.Order_ID);
+
+UPDATE OrderList A 
+SET A.Quarter= (SELECT Quarter FROM Dates B WHERE A.Order_ID=B.Order_ID);
+
+UPDATE OrderList A 
+SET A.Year_ = (SELECT Year_ FROM Dates B WHERE A.Order_ID=B.Order_ID);
+
+-- Rename Year_ Column to Year
+ALTER TABLE ORDERLIST RENAME COLUMN YEAR_ TO YEAR;
+
+-- Drop Dates Table
+DROP TABLE DATES;
+
+-- Step 11
+-- Add New Column to PlantProdCust, Customers_SH (Short-Hand)
+ALTER TABLE PlantProdCust ADD Customers_SH VARCHAR2(26);
+
+-- Populate the Customers_SH Column
+UPDATE PlantProdCust A SET A.Customers_SH = (SELECT Customers_SH FROM Customers_SH B WHERE A.Customer=B.Customers);
+
+-- Drop the Customers_SH Table
+DROP TABLE Customers_SH;
+
+-- Step 12
+-- Drop the Customer Column in PlantProdCust
+ALTER TABLE PlantProdCust DROP COLUMN Customer;
+
+-- Change The Name of the Customers_SH Column in the PlantProdCust Table to Customer
+ALTER TABLE PlantProdCust RENAME COLUMN "CUSTOMERS_SH" to Customer;
+
+--Step 13
+-- Set Primary Key for Locations, Plant_Locations, Dest_Port_Locations, Orig_Port_Locations
+ALTER TABLE Locations ADD PRIMARY KEY (Location_ID);
+ALTER TABLE Plant_Locations ADD PRIMARY KEY (Plant_Location_ID);
+ALTER TABLE Dest_Port_Locations ADD PRIMARY KEY (Dest_Port_Location_ID);
+ALTER TABLE Orig_Port_Locations ADD PRIMARY KEY (Orig_Port_Location_ID);
+
+-- Set Foreign Key in PlantConstraints
+ALTER TABLE PlantConstraints ADD FOREIGN KEY (Port_Location_ID)
+REFERENCES Orig_Port_Locations(Orig_Port_Location_ID);
+
+-- Set Foreign Key in Plant_Locations
+ALTER TABLE Plant_Locations ADD FOREIGN KEY (Location_ID)
+REFERENCES Locations(Location_ID);
+
+-- Set Foreign Key in PortCarrier [Orig_Port]
+ALTER TABLE PortCarrier ADD FOREIGN KEY (Orig_Port_Location_ID)
+REFERENCES Orig_Port_Locations(Orig_Port_Location_ID);
+
+-- Set Foreign Key in PortCarrier [Dest_Port]
+ALTER TABLE PortCarrier ADD FOREIGN KEY (Dest_Port_Location_ID)
+REFERENCES Dest_Port_Locations(Dest_Port_Location_ID);
+
+-- Set Foreign Key in FactTable [Location_ID]
+ALTER TABLE FactTable ADD FOREIGN KEY (Location_ID)
+REFERENCES Locations(Location_ID);
+
+-- Set Foreign Key in FactTable [Orig_Port_Location_ID]
+ALTER TABLE FactTable ADD FOREIGN KEY (Orig_Port_Location_ID)
+REFERENCES Orig_Port_Locations(Orig_Port_Location_ID);
+
+-- Set Foreign Key in FactTable [Dest_Port_Location_ID]
+ALTER TABLE FactTable ADD FOREIGN KEY (Dest_Port_Location_ID)
+REFERENCES Dest_Port_Locations(Dest_Port_Location_ID);
+
+-- Set Foreign Key in FactTable [Plant_Location_ID]
+ALTER TABLE FactTable ADD FOREIGN KEY (Plant_Location_ID)
+REFERENCES Plant_Locations(Plant_Location_ID);
+
+-- Set Foreign Key in Dest_Port_Locations
+ALTER TABLE Dest_Port_Locations ADD FOREIGN KEY (Location_ID)
+REFERENCES Locations(Location_ID);
+
+-- Set Foreign Key in PlantProdCust
+ALTER TABLE PlantProdCust ADD FOREIGN KEY (Plant_Location_ID)
+REFERENCES Plant_Locations(Plant_Location_ID);
+
+-- Set Foreign Key in Orig_Port_Locations
+ALTER TABLE Orig_Port_Locations ADD FOREIGN KEY (Location_ID)
+REFERENCES Locations(Location_ID);
