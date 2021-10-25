@@ -1,0 +1,8 @@
+--------------------------------------------------------
+--  Ref Constraints for Table ORDERLIST
+--------------------------------------------------------
+
+  ALTER TABLE "JAREDBACH"."ORDERLIST" ADD FOREIGN KEY ("PORTCARRIER_ID")
+	  REFERENCES "JAREDBACH"."PORTCARRIER" ("PORTCARRIER_ID") ENABLE;
+  ALTER TABLE "JAREDBACH"."ORDERLIST" ADD FOREIGN KEY ("PLANTPRODCUST_ID")
+	  REFERENCES "JAREDBACH"."PLANTPRODCUST" ("PLANTPRODCUST_ID") ENABLE;
