@@ -217,8 +217,6 @@ CREATE TABLE FactTable (
 	PlantCode_Constraint_ID 	NUMBER(38),
 	Order_ID 		            NUMBER(38),
 	Freight_Rates_ID 		    NUMBER(38),
-	PortCarrier_ID		        NUMBER(38),
-	PlantProdCust_ID		    NUMBER(38),
 	Min_Weight_Quant 		    NUMBER(38),
 	Max_Weight_Quant 		    NUMBER(38),
 	Min_Cost 		            NUMBER(38),
@@ -247,16 +245,6 @@ INSERT INTO FactTable (FactTable.Order_ID, FactTable.Ship_Ahead_Day_Count, FactT
 SELECT OrderList.Order_ID, OrderList.Ship_Ahead_Day_Count, OrderList.Ship_Late_Day_Count, OrderList.Unit_Quant, OrderList.Weight, OrderList.TPT_Day_Count
 FROM OrderList;
 
--- Insert Into FactTable Foreign Key From PlantProdCust 
-INSERT INTO FactTable (FactTable.PlantProdCust_ID)
-SELECT PlantProdCust.PlantProdCust_ID
-FROM PlantProdCust;
-
--- Insert Into FactTable Foreign Key From PortCarrier 
-INSERT INTO FactTable (FactTable.PortCarrier_ID)
-SELECT PortCarrier.PortCarrier_ID
-FROM PortCarrier;
-
 -- Dropping Columns
 ALTER TABLE FreightRates DROP (Min_Weight_Quant, Max_Weight_Quant, Min_Cost, Rate, TPT_Day_Count); ALTER TABLE PlantConstraints DROP (Cost_Per_Unit, Daily_Capacity);
 ALTER TABLE OrderList DROP (TPT_Day_Count, Ship_Ahead_Day_Count, Ship_Late_Day_Count, Unit_Quant, Weight);
@@ -270,14 +258,6 @@ ALTER TABLE OrderList		    ADD PRIMARY KEY 	(Order_ID);
 ALTER TABLE PlantProdCust		ADD PRIMARY KEY 	(PlantProdCust_ID);
 
 -- Set The Foreign Keys in The FactTable
-ALTER TABLE FactTable
-ADD FOREIGN KEY (PlantProdCust_ID)
-REFERENCES PlantProdCust(PlantProdCust_ID);
-
-ALTER TABLE FactTable
-ADD FOREIGN KEY (PortCarrier_ID)
-REFERENCES PortCarrier(PortCarrier_ID);
-
 ALTER TABLE FactTable
 ADD FOREIGN KEY (PlantCode_Constraint_ID)
 REFERENCES PlantConstraints(PlantCode_Constraint_ID);
@@ -320,30 +300,6 @@ ALTER TABLE FactTable ADD Location_ID NUMBER(38);
 INSERT INTO FactTable (FactTable.Location_ID)
 SELECT Locations.Location_ID
 FROM Locations;
-
--- Create New Column, Dest_Port_Location_ID, in the FactTable
-ALTER TABLE FactTable ADD Dest_Port_Location_ID NUMBER(38);
-
--- Insert Into the FactTable Dest_Port_Location_IDs From Dest_Port_Locations
-INSERT INTO FactTable (FactTable.Dest_Port_Location_ID)
-SELECT Dest_Port_Locations.Dest_Port_Location_ID
-FROM Dest_Port_Locations;
-
--- Create New Column, Orig_Port_Location_ID, in the FactTable
-ALTER TABLE FactTable ADD Orig_Port_Location_ID NUMBER(38);
-
--- Insert Into the FactTable Orig_Port_Location_IDs From Orig_Port_Locations
-INSERT INTO FactTable (FactTable.Orig_Port_Location_ID)
-SELECT Orig_Port_Locations.Orig_Port_Location_ID
-FROM Orig_Port_Locations;
-
--- Create New Column, Location_ID, in the FactTable
-ALTER TABLE FactTable ADD Plant_Location_ID NUMBER(38);
-
--- Insert Into the FactTable Plant_Location_IDs From Plant_Locations
-INSERT INTO FactTable (FactTable.Plant_Location_ID)
-SELECT Plant_Locations.Plant_Location_ID
-FROM Plant_Locations;
 
 -- Step 8
 -- Create New Column, Port_Location_ID, in PlantConstraints
@@ -453,13 +409,29 @@ ALTER TABLE Plant_Locations ADD PRIMARY KEY (Plant_Location_ID);
 ALTER TABLE Dest_Port_Locations ADD PRIMARY KEY (Dest_Port_Location_ID);
 ALTER TABLE Orig_Port_Locations ADD PRIMARY KEY (Orig_Port_Location_ID);
 
--- Set Foreign Key in PlantConstraints
-ALTER TABLE PlantConstraints ADD FOREIGN KEY (Port_Location_ID)
-REFERENCES Orig_Port_Locations(Orig_Port_Location_ID);
+-- Set Foreign Key in FactTable [Location_ID]
+ALTER TABLE FactTable ADD FOREIGN KEY (Location_ID)
+REFERENCES Locations(Location_ID);
+
+-- Set Foreign Key in Dest_Port_Locations
+ALTER TABLE Dest_Port_Locations ADD FOREIGN KEY (Location_ID)
+REFERENCES FactTable(Location_ID);
 
 -- Set Foreign Key in Plant_Locations
 ALTER TABLE Plant_Locations ADD FOREIGN KEY (Location_ID)
-REFERENCES Locations(Location_ID);
+REFERENCES FactTable(Location_ID);
+
+-- Set Foreign Key in Orig_Port_Locations
+ALTER TABLE Orig_Port_Locations ADD FOREIGN KEY (Location_ID)
+REFERENCES FactTable(Location_ID);
+
+-- Set Foreign Key in PlantProdCust
+ALTER TABLE PlantProdCust ADD FOREIGN KEY (Plant_Location_ID)
+REFERENCES Plant_Locations(Plant_Location_ID);
+
+-- Set Foreign Key in PlantConstraints
+ALTER TABLE PlantConstraints ADD FOREIGN KEY (Port_Location_ID)
+REFERENCES Orig_Port_Locations(Orig_Port_Location_ID);
 
 -- Set Foreign Key in PortCarrier [Orig_Port]
 ALTER TABLE PortCarrier ADD FOREIGN KEY (Orig_Port_Location_ID)
@@ -468,31 +440,3 @@ REFERENCES Orig_Port_Locations(Orig_Port_Location_ID);
 -- Set Foreign Key in PortCarrier [Dest_Port]
 ALTER TABLE PortCarrier ADD FOREIGN KEY (Dest_Port_Location_ID)
 REFERENCES Dest_Port_Locations(Dest_Port_Location_ID);
-
--- Set Foreign Key in FactTable [Location_ID]
-ALTER TABLE FactTable ADD FOREIGN KEY (Location_ID)
-REFERENCES Locations(Location_ID);
-
--- Set Foreign Key in FactTable [Orig_Port_Location_ID]
-ALTER TABLE FactTable ADD FOREIGN KEY (Orig_Port_Location_ID)
-REFERENCES Orig_Port_Locations(Orig_Port_Location_ID);
-
--- Set Foreign Key in FactTable [Dest_Port_Location_ID]
-ALTER TABLE FactTable ADD FOREIGN KEY (Dest_Port_Location_ID)
-REFERENCES Dest_Port_Locations(Dest_Port_Location_ID);
-
--- Set Foreign Key in FactTable [Plant_Location_ID]
-ALTER TABLE FactTable ADD FOREIGN KEY (Plant_Location_ID)
-REFERENCES Plant_Locations(Plant_Location_ID);
-
--- Set Foreign Key in Dest_Port_Locations
-ALTER TABLE Dest_Port_Locations ADD FOREIGN KEY (Location_ID)
-REFERENCES Locations(Location_ID);
-
--- Set Foreign Key in PlantProdCust
-ALTER TABLE PlantProdCust ADD FOREIGN KEY (Plant_Location_ID)
-REFERENCES Plant_Locations(Plant_Location_ID);
-
--- Set Foreign Key in Orig_Port_Locations
-ALTER TABLE Orig_Port_Locations ADD FOREIGN KEY (Location_ID)
-REFERENCES Locations(Location_ID);
