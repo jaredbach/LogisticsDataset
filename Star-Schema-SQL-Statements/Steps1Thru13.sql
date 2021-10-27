@@ -293,15 +293,6 @@ REFERENCES PlantProdCust(PlantProdCust_ID);
 ALTER TABLE OrderList DROP COLUMN Order_Date;
 
 -- Step 7
--- Create New Column, Location_ID, in the FactTable
-ALTER TABLE FactTable ADD Location_ID NUMBER(38);
-
--- Insert Into the FactTable Location_IDs From Locations
-INSERT INTO FactTable (FactTable.Location_ID)
-SELECT Locations.Location_ID
-FROM Locations;
-
--- Step 8
 -- Create New Column, Port_Location_ID, in PlantConstraints
 ALTER TABLE PlantConstraints ADD Port_Location_ID NUMBER(38);
 
@@ -344,7 +335,7 @@ SET A.Plant_Location_ID = (
 	WHERE A.Plant_Code=B.Plant_Code
 );
 
--- Step 9
+-- Step 8
 -- Drop Ports From PlantConstraints 
 ALTER TABLE PlantConstraints DROP COLUMN Ports;
 
@@ -355,7 +346,7 @@ ALTER TABLE PortCarrier DROP COLUMN Dest_Port;
 -- Drop Plant_Code From PlantProdCust 
 ALTER TABLE PlantProdCust DROP COLUMN Plant_Code;
 
--- Step 10
+-- Step 9
 -- Create Month_Num, Month_Name, Quarter, & Year Columns in Table OrderList
 ALTER TABLE OrderList ADD Order_Date DATE;
 ALTER TABLE OrderList ADD Month_Num NUMBER(38);
@@ -385,7 +376,7 @@ ALTER TABLE ORDERLIST RENAME COLUMN YEAR_ TO YEAR;
 -- Drop Dates Table
 DROP TABLE DATES;
 
--- Step 11
+-- Step 10
 -- Add New Column to PlantProdCust, Customers_SH (Short-Hand)
 ALTER TABLE PlantProdCust ADD Customers_SH VARCHAR2(26);
 
@@ -395,23 +386,19 @@ UPDATE PlantProdCust A SET A.Customers_SH = (SELECT Customers_SH FROM Customers_
 -- Drop the Customers_SH Table
 DROP TABLE Customers_SH;
 
--- Step 12
+-- Step 11
 -- Drop the Customer Column in PlantProdCust
 ALTER TABLE PlantProdCust DROP COLUMN Customer;
 
 -- Change The Name of the Customers_SH Column in the PlantProdCust Table to Customer
 ALTER TABLE PlantProdCust RENAME COLUMN "CUSTOMERS_SH" to Customer;
 
---Step 13
+--Step 12
 -- Set Primary Key for Locations, Plant_Locations, Dest_Port_Locations, Orig_Port_Locations
 ALTER TABLE Locations ADD PRIMARY KEY (Location_ID);
 ALTER TABLE Plant_Locations ADD PRIMARY KEY (Plant_Location_ID);
 ALTER TABLE Dest_Port_Locations ADD PRIMARY KEY (Dest_Port_Location_ID);
 ALTER TABLE Orig_Port_Locations ADD PRIMARY KEY (Orig_Port_Location_ID);
-
--- Set Foreign Key in FactTable [Location_ID]
-ALTER TABLE FactTable ADD FOREIGN KEY (Location_ID)
-REFERENCES Locations(Location_ID);
 
 -- Set Foreign Key in Dest_Port_Locations
 ALTER TABLE Dest_Port_Locations ADD FOREIGN KEY (Location_ID)
