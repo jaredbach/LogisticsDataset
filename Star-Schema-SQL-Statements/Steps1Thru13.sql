@@ -415,15 +415,15 @@ REFERENCES Locations(Location_ID);
 
 -- Set Foreign Key in Dest_Port_Locations
 ALTER TABLE Dest_Port_Locations ADD FOREIGN KEY (Location_ID)
-REFERENCES FactTable(Location_ID);
+REFERENCES Locations(Location_ID);
 
 -- Set Foreign Key in Plant_Locations
 ALTER TABLE Plant_Locations ADD FOREIGN KEY (Location_ID)
-REFERENCES FactTable(Location_ID);
+REFERENCES Locations(Location_ID);
 
 -- Set Foreign Key in Orig_Port_Locations
 ALTER TABLE Orig_Port_Locations ADD FOREIGN KEY (Location_ID)
-REFERENCES FactTable(Location_ID);
+REFERENCES Locations(Location_ID);
 
 -- Set Foreign Key in PlantProdCust
 ALTER TABLE PlantProdCust ADD FOREIGN KEY (Plant_Location_ID)
