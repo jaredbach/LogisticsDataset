@@ -299,9 +299,9 @@ ALTER TABLE PlantConstraints ADD Port_Location_ID NUMBER(38);
 -- Populate The Port_Location_ID in PlantConstraints Correctly
 UPDATE PlantConstraints A
 SET A.Port_Location_ID = (
-	SELECT Orig_Port_Location_ID
-	FROM Orig_Port_Locations B
-	WHERE A.Ports=B.Orig_Port
+	SELECT Port_Location_ID
+	FROM Port_Locations B
+	WHERE A.Ports=B.Ports
 );
 
 -- Create 2 New Columns, Orig_Location_ID & Dest_Location_ID, in PortCarrier
@@ -394,23 +394,11 @@ ALTER TABLE PlantProdCust DROP COLUMN Customer;
 ALTER TABLE PlantProdCust RENAME COLUMN "CUSTOMERS_SH" to Customer;
 
 --Step 12
--- Set Primary Key for Locations, Plant_Locations, Dest_Port_Locations, Orig_Port_Locations
-ALTER TABLE Locations ADD PRIMARY KEY (Location_ID);
+-- Set Primary Key for Port_Locations, Plant_Locations, Dest_Port_Locations, Orig_Port_Locations
+ALTER TABLE Port_Locations ADD PRIMARY KEY (Port_Location_ID);
 ALTER TABLE Plant_Locations ADD PRIMARY KEY (Plant_Location_ID);
 ALTER TABLE Dest_Port_Locations ADD PRIMARY KEY (Dest_Port_Location_ID);
 ALTER TABLE Orig_Port_Locations ADD PRIMARY KEY (Orig_Port_Location_ID);
-
--- Set Foreign Key in Dest_Port_Locations
-ALTER TABLE Dest_Port_Locations ADD FOREIGN KEY (Location_ID)
-REFERENCES Locations(Location_ID);
-
--- Set Foreign Key in Plant_Locations
-ALTER TABLE Plant_Locations ADD FOREIGN KEY (Location_ID)
-REFERENCES Locations(Location_ID);
-
--- Set Foreign Key in Orig_Port_Locations
-ALTER TABLE Orig_Port_Locations ADD FOREIGN KEY (Location_ID)
-REFERENCES Locations(Location_ID);
 
 -- Set Foreign Key in PlantProdCust
 ALTER TABLE PlantProdCust ADD FOREIGN KEY (Plant_Location_ID)
@@ -418,7 +406,7 @@ REFERENCES Plant_Locations(Plant_Location_ID);
 
 -- Set Foreign Key in PlantConstraints
 ALTER TABLE PlantConstraints ADD FOREIGN KEY (Port_Location_ID)
-REFERENCES Orig_Port_Locations(Orig_Port_Location_ID);
+REFERENCES Port_Locations(Port_Location_ID);
 
 -- Set Foreign Key in PortCarrier [Orig_Port]
 ALTER TABLE PortCarrier ADD FOREIGN KEY (Orig_Port_Location_ID)
